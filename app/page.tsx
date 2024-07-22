@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { socket } from "./socket.js";
 
 type CardSuit = "denari" | "spade" | "coppe" | "bastoni";
 
@@ -10,167 +11,141 @@ type Card = {
 };
 
 type Player = {
+  id: string;
   name: string;
   hand: Card[];
 };
 
 const rank = [1, 3, 13, 12, 11, 7, 6, 5, 4, 3, 2];
 const points = [11, 10, 4, 3, 2, 0, 0, 0, 0, 0, 0];
-const initialCards: Card[] = [
-  { suit: "denari", value: 1 },
-  { suit: "denari", value: 2 },
-  { suit: "denari", value: 3 },
-  { suit: "denari", value: 4 },
-  { suit: "denari", value: 5 },
-  { suit: "denari", value: 6 },
-  { suit: "denari", value: 7 },
-  { suit: "denari", value: 11 },
-  { suit: "denari", value: 12 },
-  { suit: "denari", value: 13 },
-  { suit: "spade", value: 1 },
-  { suit: "spade", value: 2 },
-  { suit: "spade", value: 3 },
-  { suit: "spade", value: 4 },
-  { suit: "spade", value: 5 },
-  { suit: "spade", value: 6 },
-  { suit: "spade", value: 7 },
-  { suit: "spade", value: 11 },
-  { suit: "spade", value: 12 },
-  { suit: "spade", value: 13 },
-  { suit: "coppe", value: 1 },
-  { suit: "coppe", value: 2 },
-  { suit: "coppe", value: 3 },
-  { suit: "coppe", value: 4 },
-  { suit: "coppe", value: 5 },
-  { suit: "coppe", value: 6 },
-  { suit: "coppe", value: 7 },
-  { suit: "coppe", value: 11 },
-  { suit: "coppe", value: 12 },
-  { suit: "coppe", value: 13 },
-  { suit: "bastoni", value: 1 },
-  { suit: "bastoni", value: 2 },
-  { suit: "bastoni", value: 3 },
-  { suit: "bastoni", value: 4 },
-  { suit: "bastoni", value: 5 },
-  { suit: "bastoni", value: 6 },
-  { suit: "bastoni", value: 7 },
-  { suit: "bastoni", value: 11 },
-  { suit: "bastoni", value: 12 },
-  { suit: "bastoni", value: 13 },
-];
 
 export default function Home() {
-  const [cards, setCards] = useState<Card[]>(initialCards);
-  const [briscola, setBriscola] = useState<Card>();
+  const [isConnected, setIsConnected] = useState(false);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [briscola, setBriscola] = useState<Card | null>(null);
+  const [cards, setCards] = useState<Card[]>([]);
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [currentTurn, setCurrentTurn] = useState<number>(0);
   const [currentPoints, setCurrentPoints] = useState<number[]>([0, 0]);
 
-  useEffect(() => {
-    const initializePlayers = () => {
-      return [
-        { name: "lolek", hand: [] },
-        { name: "bolek", hand: [] },
-      ];
-    };
+  const handleBattle = useCallback(
+    (newSelectedCards: Card[]) => {
+      const [firstCard, secondCard] = newSelectedCards;
+      const firstCardRank = rank.indexOf(firstCard.value);
+      const secondCardRank = rank.indexOf(secondCard.value);
 
-    const shuffleArray = (array: Card[]) => {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+      let winnerIndex = currentTurn === 0 ? 1 : 0;
+
+      if (firstCard.suit === secondCard.suit) {
+        winnerIndex = firstCardRank < secondCardRank ? 0 : 1;
+      } else if (firstCard.suit === briscola?.suit) {
+        winnerIndex = 0;
+      } else if (secondCard.suit === briscola?.suit) {
+        winnerIndex = 1;
       }
-    };
 
-    const shuffleAndDealCards = (players: Player[], deck: Card[]) => {
-      shuffleArray(deck);
-      setCards(deck);
+      const newPoints = [...currentPoints];
+      newPoints[winnerIndex] += points[firstCardRank] + points[secondCardRank];
 
-      for (let i = 0; i < 3; i++) {
-        players.forEach((player) => {
-          const card = deck.pop();
-          if (card) {
-            player.hand.push(card);
-          }
-        });
-      }
-      setBriscola(deck.pop());
-      return players;
-    };
-
-    const newPlayers = shuffleAndDealCards(initializePlayers(), [...cards]);
-    setPlayers(newPlayers);
-  }, []);
-
-  const handleBattle = (newSelectedCards: Card[]) => {
-    const [firstCard, secondCard] = newSelectedCards;
-    const firstCardRank = rank.indexOf(firstCard.value);
-    const secondCardRank = rank.indexOf(secondCard.value);
-
-    let winnerIndex = currentTurn === 0 ? 1 : 0;
-
-    if (firstCard.suit === secondCard.suit) {
-      winnerIndex = firstCardRank < secondCardRank ? 0 : 1;
-    } else if (firstCard.suit === briscola?.suit) {
-      winnerIndex = 0;
-    } else if (secondCard.suit === briscola?.suit) {
-      winnerIndex = 1;
-    }
-
-    const newPoints = [...currentPoints];
-    newPoints[winnerIndex] += points[firstCardRank] + points[secondCardRank];
-
-    if (cards.length === 1) {
-      const newCard = cards.pop();
-      if (newCard) players[winnerIndex].hand.push(newCard);
-      players[(winnerIndex + 1) % players.length].hand.push(briscola);
-    }
-
-    const updatedPlayers = [...players];
-    updatedPlayers.forEach((player) => {
-      if (cards.length > 1) {
+      if (cards.length === 1) {
         const newCard = cards.pop();
-        if (newCard) player.hand.push(newCard);
+        if (newCard) players[winnerIndex].hand.push(newCard);
+        players[(winnerIndex + 1) % players.length].hand.push(briscola);
       }
+
+      const updatedPlayers = [...players];
+      updatedPlayers.forEach((player) => {
+        if (cards.length > 1) {
+          const newCard = cards.pop();
+          if (newCard) player.hand.push(newCard);
+        }
+      });
+
+      setPlayers(updatedPlayers);
+      setCards(cards);
+      setCurrentPoints(newPoints);
+      setCurrentTurn(winnerIndex);
+      setSelectedCards([]);
+    },
+    [briscola, cards, currentPoints, currentTurn, players]
+  );
+
+  const handleCardSelect = useCallback(
+    (playerIndex: number, cardIndex: number) => {
+      if (playerIndex !== currentTurn) return;
+
+      const newSelectedCards = [...selectedCards];
+      newSelectedCards[playerIndex] = players[playerIndex].hand.splice(
+        cardIndex,
+        1
+      )[0];
+      setSelectedCards(newSelectedCards);
+
+      if (
+        newSelectedCards.length === 2 &&
+        newSelectedCards[0] &&
+        newSelectedCards[1]
+      ) {
+        handleBattle(newSelectedCards);
+      } else {
+        setCurrentTurn((prevTurn) => (prevTurn + 1) % players.length);
+      }
+    },
+    [currentTurn, handleBattle, players, selectedCards]
+  );
+
+  useEffect(() => {
+    if (socket.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      setIsConnected(true);
+      socket.emit("join_game", "Player Name"); // Replace with actual player name
+      console.log("Connected to the server");
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+      console.log("Disconnected from the server");
+    }
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    socket.on("start_game", ({ players, briscola, deck }) => {
+      console.log("Game started", { players, briscola, deck });
+      setPlayers(players);
+      setBriscola(briscola);
+      setCards(deck);
     });
 
-    setPlayers(updatedPlayers);
-    setCards(cards);
-    setCurrentPoints(newPoints);
-    setCurrentTurn(winnerIndex);
-    setSelectedCards([]);
-  };
+    socket.on("card_selected", ({ playerIndex, cardIndex }) => {
+      handleCardSelect(playerIndex, cardIndex);
+    });
 
-  const handleCardSelect = (playerIndex: number, cardIndex: number) => {
-    if (playerIndex !== currentTurn) return;
+    socket.on("game_full", () => {
+      console.log("Game is full");
+    });
 
-    const newSelectedCards = [...selectedCards];
-    newSelectedCards[playerIndex] = players[playerIndex].hand.splice(
-      cardIndex,
-      1
-    )[0];
-    setSelectedCards(newSelectedCards);
-
-    if (
-      newSelectedCards.length === 2 &&
-      newSelectedCards[0] &&
-      newSelectedCards[1]
-    ) {
-      handleBattle(newSelectedCards);
-    } else {
-      setCurrentTurn((prevTurn) => (prevTurn + 1) % players.length);
-    }
-  };
+    return () => {
+      socket.removeAllListeners();
+    };
+  }, [handleCardSelect]);
 
   return (
     <div>
+      <p>Status: {isConnected ? "connected" : "disconnected"}</p>
       {players.map((player, playerIndex) => (
-        <div key={player.name}>
-          <h2>{player.name}</h2>
+        <div key={player.id}>
+          <h2>{player.id}</h2>
           {player.hand.map((card, cardIndex) => (
             <button
+              disabled={socket.id !== player.id && true}
               key={cardIndex}
-              onClick={() => handleCardSelect(playerIndex, cardIndex)}
+              onClick={() => {
+                socket.emit("select_card", playerIndex, cardIndex);
+              }}
             >
               {card.suit} {card.value}
             </button>
@@ -188,7 +163,10 @@ export default function Home() {
         {briscola ? `${briscola.suit} ${briscola.value}` : "No Briscola"}
       </h2>
       <h2>
-        Points: Lolek {currentPoints[0]} - Bolek {currentPoints[1]}
+        Points:{" "}
+        {players.length > 0
+          ? `${players[0].id} ${currentPoints[0]} - ${players[1].id} ${currentPoints[1]}`
+          : "N/A"}
       </h2>
       <br />
       {cards.map((card, index) => (
@@ -196,8 +174,8 @@ export default function Home() {
           {card.suit} {card.value}
         </p>
       ))}
-      {currentPoints[0] > 60 && <p>Lolek won!</p>}
-      {currentPoints[1] > 60 && <p>Bolek won!</p>}
+      {currentPoints[0] > 60 && <p>{players[0].name} won!</p>}
+      {currentPoints[1] > 60 && <p>{players[1].name} won!</p>}
     </div>
   );
 }
