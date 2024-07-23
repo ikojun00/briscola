@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { socket } from "./socket.js";
+import Image from "next/image";
 
 type CardSuit = "denari" | "spade" | "coppe" | "bastoni";
 
@@ -20,7 +21,6 @@ const rank = [1, 3, 13, 12, 11, 7, 6, 5, 4, 3, 2];
 const points = [11, 10, 4, 3, 2, 0, 0, 0, 0, 0, 0];
 
 export default function Home() {
-  const [isConnected, setIsConnected] = useState(false);
   const [players, setPlayers] = useState<Player[]>([]);
   const [briscola, setBriscola] = useState<Card | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
@@ -100,13 +100,11 @@ export default function Home() {
     }
 
     function onConnect() {
-      setIsConnected(true);
       socket.emit("join_game", "Player Name"); // Replace with actual player name
       console.log("Connected to the server");
     }
 
     function onDisconnect() {
-      setIsConnected(false);
       console.log("Disconnected from the server");
     }
 
@@ -135,33 +133,79 @@ export default function Home() {
 
   return (
     <div>
-      <p>Status: {isConnected ? "connected" : "disconnected"}</p>
       {players.map((player, playerIndex) => (
         <div key={player.id}>
-          <h2>{player.id}</h2>
-          {player.hand.map((card, cardIndex) => (
-            <button
-              disabled={socket.id !== player.id && true}
-              key={cardIndex}
-              onClick={() => {
-                socket.emit("select_card", playerIndex, cardIndex);
-              }}
-            >
-              {card.suit} {card.value}
-            </button>
-          ))}
+          <h2
+            className={
+              playerIndex === currentTurn ? "font-bold" : "text-slate-200"
+            }
+          >
+            {player.id}
+          </h2>
+
+          <div className="flex">
+            {player.hand.map((card, cardIndex) =>
+              socket.id === player.id ? (
+                <button
+                  key={cardIndex}
+                  className="w-20 h-40 p-1 rounded-md border-black border-2 relative hover:transform hover:-translate-y-4"
+                  onClick={() => {
+                    socket.emit("select_card", playerIndex, cardIndex);
+                  }}
+                >
+                  <div className="h-full flex flex-col justify-between items-center rounded-md border-black border-2">
+                    <p className="text-xs self-start p-0.5">{card.value}</p>
+                    <p className="flex items-center justify-center">
+                      {card.suit}
+                    </p>
+                    <p className="text-xs self-end p-0.5">{card.value}</p>
+                  </div>
+                </button>
+              ) : (
+                <div
+                  key={cardIndex}
+                  className="w-20 rounded-md border-2 border-black"
+                >
+                  <Image
+                    src="/back.webp"
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    style={{ width: "100%", height: "auto" }}
+                    alt="Back of card"
+                  />
+                </div>
+              )
+            )}
+          </div>
           {selectedCards[playerIndex] && (
-            <p>
-              Selected Card: {selectedCards[playerIndex]?.suit}{" "}
-              {selectedCards[playerIndex]?.value}
-            </p>
+            <div className="w-20 h-40 p-1 rounded-md border-black border-2">
+              <div className="h-full flex flex-col justify-between items-center rounded-md border-black border-2">
+                <p className="text-xs self-start p-0.5">
+                  {selectedCards[playerIndex].value}
+                </p>
+                <p className="flex items-center justify-center">
+                  {selectedCards[playerIndex].suit}
+                </p>
+                <p className="text-xs self-end p-0.5">
+                  {selectedCards[playerIndex].value}
+                </p>
+              </div>
+            </div>
           )}
         </div>
       ))}
-      <h2>
-        Briscola:{" "}
-        {briscola ? `${briscola.suit} ${briscola.value}` : "No Briscola"}
-      </h2>
+      {briscola ? (
+        <div className="w-20 h-40 p-1 rounded-md border-black border-2">
+          <div className="h-full flex flex-col justify-between items-center rounded-md border-black border-2">
+            <p className="text-xs self-start p-0.5">{briscola.value}</p>
+            <p className="flex items-center justify-center">{briscola.suit}</p>
+            <p className="text-xs self-end p-0.5">{briscola.value}</p>
+          </div>
+        </div>
+      ) : (
+        "No Briscola"
+      )}
       <h2>
         Points:{" "}
         {players.length > 0
