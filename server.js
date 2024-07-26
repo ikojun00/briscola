@@ -67,18 +67,33 @@ app.prepare().then(() => {
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
-    socket.on("join_game", (playerName) => {
+    socket.on("join_game", (playerName, roomName) => {
       const index = players.findIndex((player) => player.id === socket.id);
-      if (players.length < 2 && index === -1) {
-        const player = { id: socket.id, name: playerName, hand: [] };
-        players.push(player);
+      let playersInRoom = [];
+      console.log("Players length: ", players.length);
 
-        if (players.length === 2) {
+      playersInRoom = players.filter((player) => player.room === roomName);
+      console.log("Player in room (filter): ", playersInRoom);
+
+      if (playersInRoom.length < 2 && index === -1) {
+        const player = {
+          id: socket.id,
+          name: playerName,
+          room: roomName,
+          hand: [],
+        };
+        socket.join(roomName);
+        players.push(player);
+        playersInRoom.push(player);
+        console.log("Players: ", players);
+        console.log("Players in room: ", playersInRoom);
+
+        if (playersInRoom.length === 2) {
           const deck = [...initialCards];
           shuffleArray(deck);
 
           for (let i = 0; i < 3; i++) {
-            players.forEach((player) => {
+            playersInRoom.forEach((player) => {
               const card = deck.pop();
               if (card) {
                 player.hand.push(card);
@@ -87,26 +102,23 @@ app.prepare().then(() => {
           }
 
           const briscola = deck.pop();
-          io.emit("start_game", { players, briscola, deck });
+          io.to(roomName).emit("start_game", { playersInRoom, briscola, deck });
         }
       } else {
         socket.emit("game_full");
       }
     });
 
-    socket.on("select_card", (playerIndex, cardIndex) => {
-      io.emit("card_selected", { playerIndex, cardIndex });
+    socket.on("select_card", (playerIndex, cardIndex, roomName) => {
+      io.to(roomName).emit("card_selected", { playerIndex, cardIndex });
     });
 
+    // mora se emitati drugim korisnicima izlazak iz sobe
     socket.on("disconnect", () => {
       console.log("A user disconnected:", socket.id);
-      for (let i = 0; i < 3; i++) {
-        players.forEach((player) => {
-          player.hand.pop();
-        });
-      }
+
       const index = players.findIndex((player) => player.id === socket.id);
-      if (index !== -1) players.splice(index, 1);
+      players.splice(index, 1);
     });
   });
 
