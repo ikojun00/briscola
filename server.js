@@ -92,14 +92,15 @@ app.prepare().then(() => {
           const deck = [...initialCards];
           shuffleArray(deck);
 
-          for (let i = 0; i < 3; i++) {
-            playersInRoom.forEach((player) => {
+          playersInRoom.forEach((player) => {
+            player.hand = []
+            for (let i = 0; i < 3; i++) {
               const card = deck.pop();
               if (card) {
                 player.hand.push(card);
               }
-            });
-          }
+            }
+          });
 
           const briscola = deck.pop();
           io.to(roomName).emit("start_game", { playersInRoom, briscola, deck });
@@ -116,8 +117,9 @@ app.prepare().then(() => {
     // mora se emitati drugim korisnicima izlazak iz sobe
     socket.on("disconnect", () => {
       console.log("A user disconnected:", socket.id);
-
+      const player = players.find((player) => player.id === socket.id);
       const index = players.findIndex((player) => player.id === socket.id);
+      socket.broadcast.to(player.room).emit("player_left");
       players.splice(index, 1);
     });
   });

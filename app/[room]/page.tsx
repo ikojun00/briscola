@@ -127,6 +127,16 @@ export default function Briscola() {
       handleCardSelect(playerIndex, cardIndex);
     });
 
+    socket.on("player_left", () => {
+      console.log("Player left");
+      setPlayers([]);
+      setBriscola(null);
+      setCards([]);
+      setSelectedCards([]);
+      setCurrentTurn(0);
+      setCurrentPoints([0, 0]);
+    });
+
     socket.on("game_full", () => {
       console.log("Game is full");
     });

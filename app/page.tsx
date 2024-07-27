@@ -13,7 +13,7 @@ export default function Home() {
   const handleJoinRoom = () => {
     if (username && roomName) {
       router.push(`/lobby?room=${roomName}&username=${username}`);
-    } else console.log("Username is empty");
+    } else alert("Username and/or room code is empty.");
   };
 
   const handleCreateRoom = () => {
@@ -23,7 +23,7 @@ export default function Home() {
           .toString(36)
           .substring(2, 5)}&username=${username}`
       );
-    } else console.log("Username is empty");
+    } else alert("Username is empty.");
   };
 
   return (
