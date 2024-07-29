@@ -9,8 +9,22 @@ const port = 3000;
 const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();
 
-const players = [];
-const initialCards = [
+type CardSuit = "denari" | "spade" | "coppe" | "bastoni";
+
+type Card = {
+  suit: CardSuit;
+  value: number;
+};
+
+type Player = {
+  id: string;
+  name: string;
+  room: string;
+  hand: Card[];
+};
+
+const players: Player[] = [];
+const initialCards: Card[] = [
   { suit: "denari", value: 1 },
   { suit: "denari", value: 2 },
   { suit: "denari", value: 3 },
@@ -53,7 +67,7 @@ const initialCards = [
   { suit: "bastoni", value: 13 },
 ];
 
-function shuffleArray(array) {
+function shuffleArray(array: Card[]) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
@@ -93,7 +107,7 @@ app.prepare().then(() => {
           shuffleArray(deck);
 
           playersInRoom.forEach((player) => {
-            player.hand = []
+            player.hand = [];
             for (let i = 0; i < 3; i++) {
               const card = deck.pop();
               if (card) {
