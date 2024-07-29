@@ -29,10 +29,30 @@ export default function Briscola() {
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [currentTurn, setCurrentTurn] = useState<number>(0);
   const [currentPoints, setCurrentPoints] = useState<number[]>([0, 0]);
+  const [result, setResult] = useState<number[]>([0, 0]);
   const searchParams = useSearchParams();
 
   const roomName = searchParams.get("room");
   const username = searchParams.get("username");
+  const youIndex = players.findIndex((e) => e.id === socket.id);
+  const opponentIndex = players.findIndex((e) => e.id !== socket.id);
+
+  const handleWin = useCallback(
+    (winnerIndex: number) => {
+      setBriscola(null);
+      setCards([]);
+      setSelectedCards([]);
+      setCurrentTurn(winnerIndex);
+      setCurrentPoints([0, 0]);
+
+      const newResult = [...result];
+      newResult[winnerIndex] += 1;
+      setResult(newResult);
+
+      socket.emit("new_game", players, roomName);
+    },
+    [players, result, roomName]
+  );
 
   const handleBattle = useCallback(
     (newSelectedCards: Card[]) => {
@@ -53,7 +73,12 @@ export default function Briscola() {
       const newPoints = [...currentPoints];
       newPoints[winnerIndex] += points[firstCardRank] + points[secondCardRank];
 
-      if (cards.length === 1) {
+      if (newPoints[winnerIndex] > 60) {
+        handleWin(winnerIndex);
+        return;
+      }
+
+      if (cards.length === 1 && briscola) {
         const newCard = cards.pop();
         if (newCard) players[winnerIndex].hand.push(newCard);
         players[(winnerIndex + 1) % players.length].hand.push(briscola);
@@ -73,7 +98,7 @@ export default function Briscola() {
       setCurrentTurn(winnerIndex);
       setSelectedCards([]);
     },
-    [briscola, cards, currentPoints, currentTurn, players]
+    [briscola, cards, currentPoints, currentTurn, handleWin, players]
   );
 
   const handleCardSelect = useCallback(
@@ -153,6 +178,9 @@ export default function Briscola() {
     </div>
   ) : (
     <div className="flex flex-col min-h-screen">
+      <div className="flex justify-end">
+        {result[0]} - {result[1]}
+      </div>
       <div className="flex flex-col items-center">
         {/* Opponents' Cards at the Top */}
         <div className="flex gap-20">
@@ -167,7 +195,7 @@ export default function Briscola() {
                       : "text-slate-200"
                   }
                 >
-                  {players[players.findIndex((e) => e.id !== socket.id)].name}
+                  {players[opponentIndex].name}
                 </h2>
                 <div className="flex">
                   {player.hand.map((card, cardIndex) => (
@@ -200,7 +228,7 @@ export default function Briscola() {
             />
             <p className="absolute inset-0 flex items-center justify-center">
               <span className="bg-white text-black px-2 py-1 rounded-md">
-                {currentPoints[players.findIndex((e) => e.id !== socket.id)]}
+                {currentPoints[opponentIndex]}
               </span>
             </p>
           </div>
@@ -244,9 +272,7 @@ export default function Briscola() {
               <div key={player.id} className="mt-4">
                 <h2
                   className={
-                    players.findIndex((e) => e.id === socket.id) === currentTurn
-                      ? "font-bold"
-                      : "text-slate-200"
+                    youIndex === currentTurn ? "font-bold" : "text-slate-200"
                   }
                 >
                   {player.name}
@@ -256,12 +282,7 @@ export default function Briscola() {
                     key={cardIndex}
                     className="w-20 h-40 p-1 rounded-md border-black border-2 relative hover:transform hover:-translate-y-4"
                     onClick={() => {
-                      socket.emit(
-                        "select_card",
-                        players.findIndex((e) => e.id === socket.id),
-                        cardIndex,
-                        roomName
-                      );
+                      socket.emit("select_card", youIndex, cardIndex, roomName);
                     }}
                   >
                     <div className="h-full flex flex-col justify-between items-center rounded-md border-black border-2">
@@ -287,22 +308,12 @@ export default function Briscola() {
             />
             <p className="absolute inset-0 flex items-center justify-center">
               <span className="bg-white text-black px-2 py-1 rounded-md">
-                {currentPoints[players.findIndex((e) => e.id === socket.id)]}
+                {currentPoints[youIndex]}
               </span>
             </p>
           </div>
         </div>
       </div>
-      <div className="flex justify-center">
-        <h2>
-          Points:{" "}
-          {players.length > 0
-            ? `${players[0].id} ${currentPoints[0]} - ${players[1].id} ${currentPoints[1]}`
-            : "N/A"}
-        </h2>
-      </div>
-      {currentPoints[0] > 60 && <p>{players[0].name} won!</p>}
-      {currentPoints[1] > 60 && <p>{players[1].name} won!</p>}
     </div>
   );
 }

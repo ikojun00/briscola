@@ -9,22 +9,8 @@ const port = 3000;
 const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();
 
-type CardSuit = "denari" | "spade" | "coppe" | "bastoni";
-
-type Card = {
-  suit: CardSuit;
-  value: number;
-};
-
-type Player = {
-  id: string;
-  name: string;
-  room: string;
-  hand: Card[];
-};
-
-const players: Player[] = [];
-const initialCards: Card[] = [
+const players = [];
+const initialCards = [
   { suit: "denari", value: 1 },
   { suit: "denari", value: 2 },
   { suit: "denari", value: 3 },
@@ -67,7 +53,7 @@ const initialCards: Card[] = [
   { suit: "bastoni", value: 13 },
 ];
 
-function shuffleArray(array: Card[]) {
+function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
@@ -81,13 +67,36 @@ app.prepare().then(() => {
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
+    const newGame = (playersInRoom, roomName) => {
+      const deck = [...initialCards];
+      shuffleArray(deck);
+
+      playersInRoom.forEach((player) => {
+        player.hand = [];
+        for (let i = 0; i < 3; i++) {
+          const card = deck.pop();
+          if (card) {
+            player.hand.push(card);
+          }
+        }
+      });
+
+      const briscola = deck.pop();
+      io.to(roomName).emit("start_game", { playersInRoom, briscola, deck });
+    };
+
+    socket.on("new_game", (playersInRoom, roomName) => {
+      //console.log("Players: ", playersInRoom, "Roomname: ", roomName);
+      newGame(playersInRoom, roomName);
+    });
+
     socket.on("join_game", (playerName, roomName) => {
       const index = players.findIndex((player) => player.id === socket.id);
       let playersInRoom = [];
-      console.log("Players length: ", players.length);
+      //console.log("Players length: ", players.length);
 
       playersInRoom = players.filter((player) => player.room === roomName);
-      console.log("Player in room (filter): ", playersInRoom);
+      //console.log("Player in room (filter): ", playersInRoom);
 
       if (playersInRoom.length < 2 && index === -1) {
         const player = {
@@ -99,25 +108,11 @@ app.prepare().then(() => {
         socket.join(roomName);
         players.push(player);
         playersInRoom.push(player);
-        console.log("Players: ", players);
-        console.log("Players in room: ", playersInRoom);
+        //console.log("Players: ", players);
+        //console.log("Players in room: ", playersInRoom);
 
         if (playersInRoom.length === 2) {
-          const deck = [...initialCards];
-          shuffleArray(deck);
-
-          playersInRoom.forEach((player) => {
-            player.hand = [];
-            for (let i = 0; i < 3; i++) {
-              const card = deck.pop();
-              if (card) {
-                player.hand.push(card);
-              }
-            }
-          });
-
-          const briscola = deck.pop();
-          io.to(roomName).emit("start_game", { playersInRoom, briscola, deck });
+          newGame(playersInRoom, roomName);
         }
       } else {
         socket.emit("game_full");
