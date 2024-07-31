@@ -40,7 +40,7 @@ export default function Home() {
 
   return (
     <div className="flex justify-center items-center h-screen bg-green-700 text-white">
-      <div className="flex flex-col rounded-md p-10 gap-14 border-4 bg-green-500 border-white">
+      <div className="flex flex-col rounded-md p-10 gap-14 border-4 bg-green-800 border-white">
         <h1 className="flex justify-center text-3xl">Create room</h1>
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-4">
@@ -60,7 +60,7 @@ export default function Home() {
               <p id="roomName">{roomName}</p>
             </div>
             <button
-              className="flex border-2 p-2 gap-2 bg-green-600 hover:bg-green-700 rounded-md items-center"
+              className="flex border-2 p-2 gap-2 hover:bg-green-700 rounded-md items-center"
               onClick={handleCopyClick}
             >
               <span
@@ -81,7 +81,7 @@ export default function Home() {
         </div>
         <button
           onClick={handleCreateRoom}
-          className="flex justify-center items-center gap-2 w-full bg-green-600 p-4 rounded-md border-2 border-white hover:bg-green-700"
+          className="flex justify-center items-center gap-2 w-full p-4 rounded-md border-2 border-white hover:bg-green-700"
         >
           Create
         </button>

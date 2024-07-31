@@ -280,18 +280,19 @@ export default function Briscola() {
                 {player.hand.map((card, cardIndex) => (
                   <button
                     key={cardIndex}
-                    className="w-20 h-40 p-1 rounded-md border-black border-2 relative hover:transform hover:-translate-y-4"
+                    className="w-20 h-40 relative hover:transform hover:-translate-y-4"
                     onClick={() => {
                       socket.emit("select_card", youIndex, cardIndex, roomName);
                     }}
                   >
-                    <div className="h-full flex flex-col justify-between items-center rounded-md border-black border-2">
-                      <p className="text-xs self-start p-0.5">{card.value}</p>
-                      <p className="flex items-center justify-center">
-                        {card.suit}
-                      </p>
-                      <p className="text-xs self-end p-0.5">{card.value}</p>
-                    </div>
+                    <Image
+                      src={`/brescia/${card.suit}_${card.value}.svg`}
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      style={{ width: "100%", height: "auto" }}
+                      alt="Player's card"
+                    />
                   </button>
                 ))}
               </div>

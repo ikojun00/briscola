@@ -16,43 +16,35 @@ export default function Join() {
 
   return (
     <div className="flex justify-center items-center h-screen bg-green-700 text-white">
-      <div className="flex flex-col rounded-md p-10 gap-14 border-4 bg-green-500 border-white">
+      <div className="flex flex-col rounded-md p-10 gap-14 border-4 bg-green-800 border-white">
         <h1 className="flex justify-center text-3xl">Join room</h1>
         <div className="flex flex-col gap-8">
-          <div>
-            <label className="block text-sm font-medium leading-6">
-              Username
-            </label>
-            <div className="mt-2">
-              <input
-                id="username"
-                name="username"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="block w-full rounded-md border-0 py-1.5 text-black pl-2 placeholder:text-gray-40"
-              />
-            </div>
+          <div className="flex items-center gap-4">
+            <label className="text-md">Username:</label>
+            <input
+              id="username"
+              name="username"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="block w-full rounded-md border-0 py-1.5 text-black pl-2 placeholder:text-gray-40"
+            />
           </div>
-          <div>
-            <label className="block text-sm font-medium leading-6">
-              Room code:
-            </label>
-            <div className="mt-2">
-              <input
-                id="roomName"
-                name="roomName"
-                required
-                value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
-                className="block w-full rounded-md border-0 py-1.5 text-black pl-2 placeholder:text-gray-40"
-              />
-            </div>
+          <div className="flex items-center gap-4">
+            <label className="text-md">Room code:</label>
+            <input
+              id="roomName"
+              name="roomName"
+              required
+              value={roomName}
+              onChange={(e) => setRoomName(e.target.value)}
+              className="rounded-md border-0 py-1.5 text-black pl-2 placeholder:text-gray-40"
+            />
           </div>
         </div>
         <button
           onClick={handleJoinRoom}
-          className="flex justify-center items-center gap-2 w-full bg-green-600 p-4 rounded-md border-2 border-white hover:bg-green-700"
+          className="flex justify-center items-center gap-2 w-full p-4 rounded-md border-2 border-white hover:bg-green-700"
         >
           Join
         </button>
