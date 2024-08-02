@@ -199,10 +199,7 @@ export default function Briscola() {
                 </h2>
                 <div className="flex">
                   {player.hand.map((card, cardIndex) => (
-                    <div
-                      key={cardIndex}
-                      className="w-20 rounded-md border-2 border-black"
-                    >
+                    <div key={cardIndex} className="w-20 bg-black rounded-md">
                       <Image
                         src="/back.webp"
                         width={0}
@@ -221,7 +218,7 @@ export default function Briscola() {
               src="/back.webp"
               width={0}
               height={0}
-              className="absolute inset-0 w-full h-auto border-2 border-black rounded-md"
+              className="bg-black rounded-md"
               sizes="100vw"
               style={{ width: "100%", height: "auto" }}
               alt="Back of card"
@@ -237,31 +234,47 @@ export default function Briscola() {
         {/* Selected Cards in the Middle */}
         <div className="flex items-center justify-center mt-auto mb-4">
           {selectedCards.map((card, index) => (
-            <div
-              key={index}
-              className="w-20 h-40 p-1 rounded-md border-black border-2 m-2"
-            >
-              <div className="h-full flex flex-col justify-between items-center rounded-md border-black border-2">
-                <p className="text-xs self-start p-0.5">{card.value}</p>
-                <p className="flex items-center justify-center">{card.suit}</p>
-                <p className="text-xs self-end p-0.5">{card.value}</p>
-              </div>
+            <div key={index} className="w-20">
+              <Image
+                src={`/brescia/${card.suit}_${card.value}.svg`}
+                width={0}
+                height={0}
+                sizes="100vw"
+                style={{ width: "100%", height: "auto" }}
+                alt="Selected card"
+              />
             </div>
           ))}
 
           {briscola ? (
-            <div className="w-20 h-40 p-1 rounded-md border-black border-2 ml-4">
-              <div className="h-full flex flex-col justify-between items-center rounded-md border-black border-2">
-                <p className="text-xs self-start p-0.5">{briscola.value}</p>
-                <p className="flex items-center justify-center">
-                  {briscola.suit}
-                </p>
-                <p className="text-xs self-end p-0.5">{briscola.value}</p>
-              </div>
+            <div className="w-20 -rotate-90">
+              <Image
+                src={`/brescia/${briscola.suit}_${briscola.value}.svg`}
+                width={0}
+                height={0}
+                sizes="100vw"
+                style={{ width: "100%", height: "auto" }}
+                alt="Briscola"
+              />
             </div>
           ) : (
             "No Briscola"
           )}
+          <div className="w-20 z-10 bg-black rounded-md relative">
+            <Image
+              src="/back.webp"
+              width={0}
+              height={0}
+              sizes="100vw"
+              style={{ width: "100%", height: "auto" }}
+              alt="Deck"
+            />
+            <p className="absolute inset-0 flex items-center justify-center">
+              <span className="bg-white text-black px-2 py-1 rounded-md">
+                {cards.length}
+              </span>
+            </p>
+          </div>
         </div>
 
         {/* Current Player's Cards at the Bottom */}
@@ -269,14 +282,7 @@ export default function Briscola() {
           {players
             .filter((player) => player.id === socket.id)
             .map((player) => (
-              <div key={player.id} className="mt-4">
-                <h2
-                  className={
-                    youIndex === currentTurn ? "font-bold" : "text-slate-200"
-                  }
-                >
-                  {player.name}
-                </h2>
+              <div key={player.id}>
                 {player.hand.map((card, cardIndex) => (
                   <button
                     key={cardIndex}
@@ -295,14 +301,21 @@ export default function Briscola() {
                     />
                   </button>
                 ))}
+                <h2
+                  className={
+                    youIndex === currentTurn ? "font-bold" : "text-slate-200"
+                  }
+                >
+                  {player.name}
+                </h2>
               </div>
             ))}
-          <div className="w-20 relative">
+          <div className="w-20 relative mb-5">
             <Image
               src="/back.webp"
               width={0}
               height={0}
-              className="absolute inset-0 w-full h-auto border-2 border-black rounded-md"
+              className="bg-black rounded-md"
               sizes="100vw"
               style={{ width: "100%", height: "auto" }}
               alt="Back of card"

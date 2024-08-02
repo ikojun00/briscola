@@ -3,9 +3,9 @@ import React from "react";
 export default function JoinRoom() {
   return (
     <svg
-      viewBox="0 0 24 24"
+      viewBox="5 0 20 24"
       fill="none"
-      className="w-8"
+      className="w-6"
       xmlns="http://www.w3.org/2000/svg"
       stroke="#ffffff"
     >
