@@ -117,7 +117,9 @@ export default function Briscola() {
         newSelectedCards[0] &&
         newSelectedCards[1]
       ) {
-        handleBattle(newSelectedCards);
+        setTimeout(() => {
+          handleBattle(newSelectedCards);
+        }, 1000);
       } else {
         setCurrentTurn((prevTurn) => (prevTurn + 1) % players.length);
       }
@@ -177,11 +179,12 @@ export default function Briscola() {
       Waiting other players...
     </div>
   ) : (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen">
       <div className="flex justify-end">
-        {result[0]} - {result[1]}
+        {players[youIndex].name} {result[0]} - {result[1]}{" "}
+        {players[opponentIndex].name}
       </div>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col h-full justify-between items-center py-6">
         {/* Opponents' Cards at the Top */}
         <div className="flex gap-20">
           {players
@@ -190,7 +193,7 @@ export default function Briscola() {
               <div key={player.id} className="mb-4">
                 <h2
                   className={
-                    players.findIndex((e) => e.id !== socket.id) === currentTurn
+                    opponentIndex === currentTurn
                       ? "font-bold"
                       : "text-slate-200"
                   }
@@ -232,7 +235,7 @@ export default function Briscola() {
         </div>
 
         {/* Selected Cards in the Middle */}
-        <div className="flex items-center justify-center mt-auto mb-4">
+        <div className="flex justify-center">
           {selectedCards.map((card, index) => (
             <div key={index} className="w-20">
               <Image
@@ -260,12 +263,13 @@ export default function Briscola() {
           ) : (
             "No Briscola"
           )}
-          <div className="w-20 z-10 bg-black rounded-md relative">
+          <div className="w-20 z-10 relative">
             <Image
               src="/back.webp"
               width={0}
               height={0}
               sizes="100vw"
+              className="bg-black rounded-md"
               style={{ width: "100%", height: "auto" }}
               alt="Deck"
             />
