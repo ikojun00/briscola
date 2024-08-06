@@ -180,13 +180,13 @@ export default function Briscola() {
     </div>
   ) : (
     <div className="flex flex-col h-screen">
-      <div className="flex justify-end">
+      <div className="flex justify-end p-4 pb-0">
         {players[youIndex].name} {result[0]} - {result[1]}{" "}
         {players[opponentIndex].name}
       </div>
       <div className="flex flex-col h-full justify-between items-center py-6">
-        {/* Opponents' Cards at the Top */}
-        <div className="flex gap-20">
+        {/* Opponent's cards at the top */}
+        <div className="flex justify-between w-96">
           {players
             .filter((player) => player.id !== socket.id)
             .map((player) => (
@@ -234,55 +234,58 @@ export default function Briscola() {
           </div>
         </div>
 
-        {/* Selected Cards in the Middle */}
-        <div className="flex justify-center">
-          {selectedCards.map((card, index) => (
-            <div key={index} className="w-20">
+        {/* Selected cards in the middle */}
+        <div className="flex justify-between items-center w-96">
+          <div className="flex">
+            {selectedCards.map((card, index) => (
+              <div key={index} className="w-20">
+                <Image
+                  src={`/brescia/${card.suit}_${card.value}.svg`}
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  style={{ width: "100%", height: "auto" }}
+                  alt="Selected card"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex">
+            {briscola ? (
+              <div className="w-20 -rotate-90">
+                <Image
+                  src={`/brescia/${briscola.suit}_${briscola.value}.svg`}
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  style={{ width: "100%", height: "auto" }}
+                  alt="Briscola"
+                />
+              </div>
+            ) : (
+              "No Briscola"
+            )}
+            <div className="w-20 z-10 relative mb-5">
               <Image
-                src={`/brescia/${card.suit}_${card.value}.svg`}
+                src="/back.webp"
                 width={0}
                 height={0}
                 sizes="100vw"
+                className="bg-black rounded-md"
                 style={{ width: "100%", height: "auto" }}
-                alt="Selected card"
+                alt="Deck"
               />
+              <p className="absolute inset-0 flex items-center justify-center">
+                <span className="bg-white text-black px-2 py-1 rounded-md">
+                  {cards.length}
+                </span>
+              </p>
             </div>
-          ))}
-
-          {briscola ? (
-            <div className="w-20 -rotate-90">
-              <Image
-                src={`/brescia/${briscola.suit}_${briscola.value}.svg`}
-                width={0}
-                height={0}
-                sizes="100vw"
-                style={{ width: "100%", height: "auto" }}
-                alt="Briscola"
-              />
-            </div>
-          ) : (
-            "No Briscola"
-          )}
-          <div className="w-20 z-10 relative">
-            <Image
-              src="/back.webp"
-              width={0}
-              height={0}
-              sizes="100vw"
-              className="bg-black rounded-md"
-              style={{ width: "100%", height: "auto" }}
-              alt="Deck"
-            />
-            <p className="absolute inset-0 flex items-center justify-center">
-              <span className="bg-white text-black px-2 py-1 rounded-md">
-                {cards.length}
-              </span>
-            </p>
           </div>
         </div>
 
-        {/* Current Player's Cards at the Bottom */}
-        <div className="flex gap-20 items-center justify-end">
+        {/* Current player's cards at the bottom */}
+        <div className="flex justify-between items-center w-96">
           {players
             .filter((player) => player.id === socket.id)
             .map((player) => (
@@ -290,7 +293,7 @@ export default function Briscola() {
                 {player.hand.map((card, cardIndex) => (
                   <button
                     key={cardIndex}
-                    className="w-20 h-40 relative hover:transform hover:-translate-y-4"
+                    className="w-20 relative hover:transform hover:-translate-y-4"
                     onClick={() => {
                       socket.emit("select_card", youIndex, cardIndex, roomName);
                     }}
