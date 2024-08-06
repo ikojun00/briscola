@@ -14,7 +14,7 @@ Link to the deployed app: https://briscola.up.railway.app/
 
 ### Cloning Repository
 
-1. **Clone Repository**: Clonethis repository to your local machine using Git.
+1. **Clone Repository**: Clone this repository to your local machine using Git.
 
    ```bash
    git clone https://github.com/ikojun00/briscola.git
