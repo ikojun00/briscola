@@ -1,8 +1,11 @@
+"use client";
+
 import React from "react";
 import JoinRoom from "./components/icons/JoinRoom";
 import CreateRoom from "./components/icons/CreateRoom";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 export default function Home() {
   return (
@@ -18,14 +21,22 @@ export default function Home() {
         />
         <div className="flex px-14 flex-col gap-4">
           <Link href="/join">
-            <button className="flex justify-center items-center w-full gap-2 p-4 rounded-md border-2 border-white hover:bg-green-700">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex justify-center items-center w-full gap-2 p-4 rounded-md border-2 border-white bg-green-700"
+            >
               <JoinRoom /> Join Room
-            </button>
+            </motion.button>
           </Link>
           <Link href="/create">
-            <button className="flex justify-center items-center w-full gap-2 p-4 rounded-md border-2 border-white hover:bg-green-700">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex justify-center items-center w-full gap-2 p-4 rounded-md border-2 border-white bg-green-700"
+            >
               <CreateRoom /> Create Room
-            </button>
+            </motion.button>
           </Link>
         </div>
       </div>
