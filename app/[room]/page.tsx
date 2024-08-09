@@ -28,8 +28,9 @@ export default function Briscola() {
   const [cards, setCards] = useState<Card[]>([]);
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [currentTurn, setCurrentTurn] = useState<number>(0);
-  const [currentPoints, setCurrentPoints] = useState<number[]>([0, 0]);
+  const [currentPoints, setCurrentPoints] = useState<number[]>([50, 50]);
   const [result, setResult] = useState<number[]>([0, 0]);
+  const [rounds, setRounds] = useState<number>(0);
   const searchParams = useSearchParams();
 
   const roomName = searchParams.get("room");
@@ -37,21 +38,27 @@ export default function Briscola() {
   const youIndex = players.findIndex((e) => e.id === socket.id);
   const opponentIndex = players.findIndex((e) => e.id !== socket.id);
 
-  const handleWin = useCallback(
-    (winnerIndex: number) => {
+  const handleWinOrDraw = useCallback(
+    (winnerIndex: number | null) => {
       setBriscola(null);
       setCards([]);
       setSelectedCards([]);
-      setCurrentTurn(winnerIndex);
+      setCurrentTurn((rounds + 1) % 2);
+      setRounds(rounds + 1);
       setCurrentPoints([0, 0]);
 
-      const newResult = [...result];
-      newResult[winnerIndex] += 1;
-      setResult(newResult);
+      if (winnerIndex !== null) {
+        alert(players[winnerIndex].name + " won!");
+        const newResult = [...result];
+        newResult[winnerIndex] += 1;
+        setResult(newResult);
+      } else {
+        alert("Draw!");
+      }
 
       socket.emit("new_game", players, roomName);
     },
-    [players, result, roomName]
+    [players, result, roomName, rounds]
   );
 
   const handleBattle = useCallback(
@@ -74,7 +81,12 @@ export default function Briscola() {
       newPoints[winnerIndex] += points[firstCardRank] + points[secondCardRank];
 
       if (newPoints[winnerIndex] > 60) {
-        handleWin(winnerIndex);
+        handleWinOrDraw(winnerIndex);
+        return;
+      }
+
+      if (newPoints[0] === 60 && newPoints[1] === 60) {
+        handleWinOrDraw(null);
         return;
       }
 
@@ -98,7 +110,7 @@ export default function Briscola() {
       setCurrentTurn(winnerIndex);
       setSelectedCards([]);
     },
-    [briscola, cards, currentPoints, currentTurn, handleWin, players]
+    [briscola, cards, currentPoints, currentTurn, handleWinOrDraw, players]
   );
 
   const handleCardSelect = useCallback(
