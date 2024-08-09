@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Copy from "../components/icons/Copy";
 import Success from "../components/icons/Success";
+import { motion } from "framer-motion";
 
 export default function Home() {
   const [username, setUsername] = useState<string>("");
@@ -60,7 +61,7 @@ export default function Home() {
               <p id="roomName">{roomName}</p>
             </div>
             <button
-              className="flex border-2 p-2 gap-2 hover:bg-green-700 rounded-md items-center"
+              className="flex border-2 p-2 gap-2 bg-green-700 rounded-md items-center"
               onClick={handleCopyClick}
             >
               <span
@@ -79,12 +80,14 @@ export default function Home() {
             </button>
           </div>
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={handleCreateRoom}
-          className="flex justify-center items-center gap-2 w-full p-4 rounded-md border-2 border-white hover:bg-green-700"
+          className="flex justify-center items-center gap-2 w-full p-4 rounded-md border-2 border-white bg-green-700"
         >
           Create
-        </button>
+        </motion.button>
       </div>
     </div>
   );

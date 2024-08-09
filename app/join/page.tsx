@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 export default function Join() {
   const [username, setUsername] = useState<string>("");
@@ -42,12 +43,14 @@ export default function Join() {
             />
           </div>
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={handleJoinRoom}
-          className="flex justify-center items-center gap-2 w-full p-4 rounded-md border-2 border-white hover:bg-green-700"
+          className="flex justify-center items-center gap-2 w-full p-4 rounded-md border-2 border-white bg-green-700"
         >
           Join
-        </button>
+        </motion.button>
       </div>
     </div>
   );
