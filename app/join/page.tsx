@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 
 export default function Join() {
   const [username, setUsername] = useState<string>("");
-  const [roomName, setRoomName] = useState<string>();
+  const [roomName, setRoomName] = useState<string>("");
   const router = useRouter();
 
   const handleJoinRoom = () => {

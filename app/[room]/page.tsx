@@ -28,9 +28,10 @@ export default function Briscola() {
   const [cards, setCards] = useState<Card[]>([]);
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [currentTurn, setCurrentTurn] = useState<number>(0);
-  const [currentPoints, setCurrentPoints] = useState<number[]>([50, 50]);
+  const [currentPoints, setCurrentPoints] = useState<number[]>([0, 0]);
   const [result, setResult] = useState<number[]>([0, 0]);
   const [rounds, setRounds] = useState<number>(0);
+  const [isConnected, setIsConnected] = useState(false);
   const searchParams = useSearchParams();
 
   const roomName = searchParams.get("room");
@@ -43,7 +44,7 @@ export default function Briscola() {
       setBriscola(null);
       setCards([]);
       setSelectedCards([]);
-      setCurrentTurn((rounds + 1) % 2);
+      setCurrentTurn((rounds + 1) % players.length);
       setRounds(rounds + 1);
       setCurrentPoints([0, 0]);
 
@@ -140,11 +141,12 @@ export default function Briscola() {
   );
 
   useEffect(() => {
-    if (socket.connected) {
+    if (!isConnected) {
       onConnect();
     }
 
     function onConnect() {
+      setIsConnected(true);
       socket.emit("join_game", username, roomName);
       console.log("Connected to the room");
     }
@@ -184,7 +186,7 @@ export default function Briscola() {
     return () => {
       socket.removeAllListeners();
     };
-  }, [handleCardSelect, roomName, username]);
+  }, [handleCardSelect, isConnected, roomName, username]);
 
   return players.length === 0 ? (
     <div className="flex h-screen justify-center items-center">
