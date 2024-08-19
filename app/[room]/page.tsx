@@ -27,6 +27,7 @@ export default function Briscola() {
   const [briscola, setBriscola] = useState<Card | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
+  const [displaySelectedCards, setDisplaySelectedCards] = useState<Card[]>([]);
   const [currentTurn, setCurrentTurn] = useState<number>(0);
   const [currentPoints, setCurrentPoints] = useState<number[]>([0, 0]);
   const [result, setResult] = useState<number[]>([0, 0]);
@@ -44,6 +45,7 @@ export default function Briscola() {
       setBriscola(null);
       setCards([]);
       setSelectedCards([]);
+      setDisplaySelectedCards([]);
       setCurrentTurn((rounds + 1) % players.length);
       setRounds(rounds + 1);
       setCurrentPoints([0, 0]);
@@ -110,6 +112,7 @@ export default function Briscola() {
       setCurrentPoints(newPoints);
       setCurrentTurn(winnerIndex);
       setSelectedCards([]);
+      setDisplaySelectedCards([]);
     },
     [briscola, cards, currentPoints, currentTurn, handleWinOrDraw, players]
   );
@@ -119,17 +122,14 @@ export default function Briscola() {
       if (playerIndex !== currentTurn) return;
 
       const newSelectedCards = [...selectedCards];
-      newSelectedCards[playerIndex] = players[playerIndex].hand.splice(
-        cardIndex,
-        1
-      )[0];
+      const newDisplaySelectedCards = [...displaySelectedCards];
+      const selectedCard = players[playerIndex].hand.splice(cardIndex, 1)[0];
+      newSelectedCards[playerIndex] = selectedCard;
+      newDisplaySelectedCards.push(selectedCard);
       setSelectedCards(newSelectedCards);
+      setDisplaySelectedCards(newDisplaySelectedCards);
 
-      if (
-        newSelectedCards.length === 2 &&
-        newSelectedCards[0] &&
-        newSelectedCards[1]
-      ) {
+      if (newSelectedCards[0] && newSelectedCards[1]) {
         setTimeout(() => {
           handleBattle(newSelectedCards);
         }, 1000);
@@ -137,7 +137,7 @@ export default function Briscola() {
         setCurrentTurn((prevTurn) => (prevTurn + 1) % players.length);
       }
     },
-    [currentTurn, handleBattle, players, selectedCards]
+    [currentTurn, displaySelectedCards, handleBattle, players, selectedCards]
   );
 
   useEffect(() => {
@@ -251,7 +251,7 @@ export default function Briscola() {
         {/* Selected cards in the middle */}
         <div className="flex justify-between items-center w-96">
           <div className="flex">
-            {selectedCards.map((card, index) => (
+            {displaySelectedCards.map((card, index) => (
               <div key={index} className="w-20">
                 <Image
                   src={`/brescia/${card.suit}_${card.value}.svg`}
