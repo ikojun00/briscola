@@ -4,20 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { socket } from "../socket.js";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-
-type CardSuit = "denari" | "spade" | "coppe" | "bastoni";
-
-type Card = {
-  suit: CardSuit;
-  value: number;
-};
-
-type Player = {
-  id: string;
-  name: string;
-  room: string;
-  hand: Card[];
-};
+import Player from "../interfaces/Player";
+import Card from "../interfaces/Card";
+import OpponentHand from "../components/OpponentHand";
 
 const rank = [1, 3, 13, 12, 11, 7, 6, 5, 4, 3, 2];
 const points = [11, 10, 4, 3, 2, 0, 0, 0, 0, 0, 0];
@@ -200,53 +189,13 @@ export default function Briscola() {
       </div>
       <div className="flex flex-col h-full justify-between items-center py-6">
         {/* Opponent's cards at the top */}
-        <div className="flex justify-between w-96">
-          {players
-            .filter((player) => player.id !== socket.id)
-            .map((player) => (
-              <div key={player.id} className="mb-4">
-                <h2
-                  className={
-                    opponentIndex === currentTurn
-                      ? "font-bold"
-                      : "text-slate-200"
-                  }
-                >
-                  {players[opponentIndex].name}
-                </h2>
-                <div className="flex">
-                  {player.hand.map((card, cardIndex) => (
-                    <div key={cardIndex} className="w-20 bg-black rounded-md">
-                      <Image
-                        src="/back.webp"
-                        width={0}
-                        height={0}
-                        sizes="100vw"
-                        style={{ width: "100%", height: "auto" }}
-                        alt="Back of card"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          <div className="w-20 mt-6 relative mb-4">
-            <Image
-              src="/back.webp"
-              width={0}
-              height={0}
-              className="bg-black rounded-md"
-              sizes="100vw"
-              style={{ width: "100%", height: "auto" }}
-              alt="Back of card"
-            />
-            <p className="absolute inset-0 flex items-center justify-center">
-              <span className="bg-white text-black px-2 py-1 rounded-md">
-                {currentPoints[opponentIndex]}
-              </span>
-            </p>
-          </div>
-        </div>
+        <OpponentHand
+          players={players}
+          socket={socket}
+          currentTurn={currentTurn}
+          opponentIndex={opponentIndex}
+          points={currentPoints[opponentIndex]}
+        />
 
         {/* Selected cards in the middle */}
         <div className="flex justify-between items-center w-96">
