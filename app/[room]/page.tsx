@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import Player from "../interfaces/Player";
 import Card from "../interfaces/Card";
 import OpponentHand from "../components/OpponentHand";
+import Deck from "../interfaces/Deck";
 
 const rank = [1, 3, 13, 12, 11, 7, 6, 5, 4, 3, 2];
 const points = [11, 10, 4, 3, 2, 0, 0, 0, 0, 0, 0];
@@ -18,7 +19,6 @@ export default function Briscola() {
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [displaySelectedCards, setDisplaySelectedCards] = useState<Card[]>([]);
   const [currentTurn, setCurrentTurn] = useState<number>(0);
-  const [currentPoints, setCurrentPoints] = useState<number[]>([0, 0]);
   const [result, setResult] = useState<number[]>([0, 0]);
   const [rounds, setRounds] = useState<number>(0);
   const [isConnected, setIsConnected] = useState(false);
@@ -37,7 +37,12 @@ export default function Briscola() {
       setDisplaySelectedCards([]);
       setCurrentTurn((rounds + 1) % players.length);
       setRounds(rounds + 1);
-      setCurrentPoints([0, 0]);
+      setPlayers((prevPlayers) =>
+        prevPlayers.map((player) => ({
+          ...player,
+          deck: { points: 0, cards: [] },
+        }))
+      );
 
       if (winnerIndex !== null) {
         alert(players[winnerIndex].name + " won!");
@@ -69,26 +74,36 @@ export default function Briscola() {
         winnerIndex = 1;
       }
 
-      const newPoints = [...currentPoints];
-      newPoints[winnerIndex] += points[firstCardRank] + points[secondCardRank];
+      const newPoints =
+        players[winnerIndex].deck.points +
+        points[firstCardRank] +
+        points[secondCardRank];
 
-      if (newPoints[winnerIndex] > 60) {
+      const updatedPlayers = players.map((player, index) => {
+        if (index === winnerIndex) {
+          const updatedDeck: Deck = {
+            points: newPoints,
+            cards: [...player.deck.cards, firstCard, secondCard],
+          };
+          return { ...player, deck: updatedDeck };
+        }
+        return player;
+      });
+
+      if (newPoints > 60) {
         handleWinOrDraw(winnerIndex);
-        return;
-      }
-
-      if (newPoints[0] === 60 && newPoints[1] === 60) {
-        handleWinOrDraw(null);
         return;
       }
 
       if (cards.length === 1 && briscola) {
         const newCard = cards.pop();
-        if (newCard) players[winnerIndex].hand.push(newCard);
-        players[(winnerIndex + 1) % players.length].hand.push(briscola);
+        if (newCard) updatedPlayers[winnerIndex].hand.push(newCard);
+        updatedPlayers[(winnerIndex + 1) % updatedPlayers.length].hand.push(
+          briscola
+        );
+        setBriscola(null);
       }
 
-      const updatedPlayers = [...players];
       updatedPlayers.forEach((player) => {
         if (cards.length > 1) {
           const newCard = cards.pop();
@@ -96,14 +111,22 @@ export default function Briscola() {
         }
       });
 
+      if (
+        newPoints === 60 &&
+        updatedPlayers[0].hand.length === 0 &&
+        updatedPlayers[1].hand.length === 0
+      ) {
+        handleWinOrDraw(null);
+        return;
+      }
+
       setPlayers(updatedPlayers);
       setCards(cards);
-      setCurrentPoints(newPoints);
       setCurrentTurn(winnerIndex);
       setSelectedCards([]);
       setDisplaySelectedCards([]);
     },
-    [briscola, cards, currentPoints, currentTurn, handleWinOrDraw, players]
+    [briscola, cards, currentTurn, handleWinOrDraw, players]
   );
 
   const handleCardSelect = useCallback(
@@ -164,8 +187,8 @@ export default function Briscola() {
       setBriscola(null);
       setCards([]);
       setSelectedCards([]);
+      setDisplaySelectedCards([]);
       setCurrentTurn(0);
-      setCurrentPoints([0, 0]);
     });
 
     socket.on("game_full", () => {
@@ -194,7 +217,7 @@ export default function Briscola() {
           socket={socket}
           currentTurn={currentTurn}
           opponentIndex={opponentIndex}
-          points={currentPoints[opponentIndex]}
+          points={players[opponentIndex].deck.points}
         />
 
         {/* Selected cards in the middle */}
@@ -292,7 +315,7 @@ export default function Briscola() {
             />
             <p className="absolute inset-0 flex items-center justify-center">
               <span className="bg-white text-black px-2 py-1 rounded-md">
-                {currentPoints[youIndex]}
+                {players[youIndex].deck.points}
               </span>
             </p>
           </div>

@@ -73,6 +73,10 @@ app.prepare().then(() => {
 
       playersInRoom.forEach((player) => {
         player.hand = [];
+        player.deck = {
+          points: 50,
+          cards: [],
+        };
         for (let i = 0; i < 3; i++) {
           const card = deck.pop();
           if (card) {
@@ -104,6 +108,10 @@ app.prepare().then(() => {
           name: playerName,
           room: roomName,
           hand: [],
+          deck: {
+            points: 50,
+            cards: [],
+          },
         };
         socket.join(roomName);
         players.push(player);
@@ -126,10 +134,21 @@ app.prepare().then(() => {
     // mora se emitati drugim korisnicima izlazak iz sobe
     socket.on("disconnect", () => {
       console.log("A user disconnected:", socket.id);
-      const player = players.find((player) => player.id === socket.id);
-      const index = players.findIndex((player) => player.id === socket.id);
-      socket.broadcast.to(player.room).emit("player_left");
-      players.splice(index, 1);
+      const playerIndex = players.findIndex(
+        (player) => player.id === socket.id
+      );
+
+      if (playerIndex !== -1) {
+        const leavingPlayer = players[playerIndex];
+        socket.broadcast.to(leavingPlayer.room).emit("player_left");
+        players.forEach((player) => {
+          if (player.room === leavingPlayer.room) {
+            player.hand = [];
+          }
+        });
+
+        players.splice(playerIndex, 1);
+      }
     });
   });
 
