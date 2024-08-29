@@ -74,7 +74,7 @@ app.prepare().then(() => {
       playersInRoom.forEach((player) => {
         player.hand = [];
         player.deck = {
-          points: 50,
+          points: 0,
           cards: [],
         };
         for (let i = 0; i < 3; i++) {
