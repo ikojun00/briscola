@@ -9,6 +9,7 @@ import OpponentHand from "../components/OpponentHand";
 import Deck from "../interfaces/Deck";
 import Board from "../components/Board";
 import PlayerHand from "../components/PlayerHand";
+import { redirect } from "next/navigation";
 
 const rank = [1, 3, 13, 12, 11, 7, 6, 5, 4, 3, 2];
 const points = [11, 10, 4, 3, 2, 0, 0, 0, 0, 0, 0];
@@ -29,6 +30,10 @@ export default function Briscola() {
   const username = searchParams.get("username");
   const youIndex = players.findIndex((e) => e.id === socket.id);
   const opponentIndex = players.findIndex((e) => e.id !== socket.id);
+
+  if (!roomName || !username) {
+    redirect(`/not-found`);
+  }
 
   const handleWinOrDraw = useCallback(
     (winnerIndex: number | null) => {
