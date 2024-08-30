@@ -20,33 +20,33 @@ export default function PlayerHand({
   roomName,
 }: PlayerHandProps) {
   return (
-    <div className="flex justify-between items-center w-96">
-      <div key={player.id}>
-        {player.hand.map((card, cardIndex) => (
-          <button
-            key={cardIndex}
-            className="w-20 relative hover:transform hover:-translate-y-4"
-            onClick={() => {
-              socket.emit("select_card", youIndex, cardIndex, roomName);
-            }}
-          >
-            <Image
-              src={`/brescia/${card.suit}_${card.value}.svg`}
-              width={0}
-              height={0}
-              sizes="100vw"
-              style={{ width: "100%", height: "auto" }}
-              alt="Player's card"
-            />
-          </button>
-        ))}
-        <h2
-          className={youIndex === currentTurn ? "font-bold" : "text-slate-200"}
-        >
-          {player.name}
-        </h2>
+    <div>
+      <div className="flex justify-between items-center w-96">
+        <div key={player.id}>
+          {player.hand.map((card, cardIndex) => (
+            <button
+              key={cardIndex}
+              className="w-20 relative hover:transform hover:-translate-y-4"
+              onClick={() => {
+                socket.emit("select_card", youIndex, cardIndex, roomName);
+              }}
+            >
+              <Image
+                src={`/brescia/${card.suit}_${card.value}.svg`}
+                width={0}
+                height={0}
+                sizes="100vw"
+                style={{ width: "100%", height: "auto" }}
+                alt="Player's card"
+              />
+            </button>
+          ))}
+        </div>
+        <PointsDisplay points={points || 0} />
       </div>
-      <PointsDisplay points={points || 0} />
+      <h2 className={youIndex === currentTurn ? "font-bold" : "text-slate-200"}>
+        {player.name}
+      </h2>
     </div>
   );
 }

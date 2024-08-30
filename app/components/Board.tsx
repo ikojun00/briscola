@@ -30,7 +30,7 @@ export default function Board({
         ))}
       </div>
       <div className="flex">
-        {briscola ? (
+        {briscola && (
           <div className="w-20 -rotate-90">
             <Image
               src={`/brescia/${briscola.suit}_${briscola.value}.svg`}
@@ -41,25 +41,25 @@ export default function Board({
               alt="Briscola"
             />
           </div>
-        ) : (
-          "No Briscola"
         )}
-        <div className="w-20 z-10 relative mb-5">
-          <Image
-            src="/back.webp"
-            width={0}
-            height={0}
-            sizes="100vw"
-            className="bg-black rounded-md"
-            style={{ width: "100%", height: "auto" }}
-            alt="Deck"
-          />
-          <p className="absolute inset-0 flex items-center justify-center">
-            <span className="bg-white text-black px-2 py-1 rounded-md">
-              {cardsLength}
-            </span>
-          </p>
-        </div>
+        {cardsLength > 0 && (
+          <div className="w-20 z-10 relative mb-5">
+            <Image
+              src="/back.webp"
+              width={0}
+              height={0}
+              sizes="100vw"
+              className="bg-black rounded-md"
+              style={{ width: "100%", height: "auto" }}
+              alt="Deck"
+            />
+            <p className="absolute inset-0 flex items-center justify-center">
+              <span className="bg-white text-black px-2 py-1 rounded-md">
+                {cardsLength}
+              </span>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

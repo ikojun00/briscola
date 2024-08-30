@@ -213,8 +213,7 @@ export default function Briscola() {
   ) : (
     <div className="flex flex-col h-screen">
       <div className="flex justify-end p-4 pb-0">
-        {players[youIndex].name} {result[0]} - {result[1]}{" "}
-        {players[opponentIndex].name}
+        {players[0].name} {result[0]} - {result[1]} {players[1].name}
       </div>
       <div className="flex flex-col h-full justify-between items-center py-6">
         <OpponentHand

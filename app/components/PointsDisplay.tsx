@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function PointsDisplay({ points }: { points: number }) {
   return (
-    <div className="w-20 mt-6 relative mb-4">
+    <div className="w-20 relative">
       <Image
         src="/back.webp"
         width={0}
